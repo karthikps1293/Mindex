@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
@@ -143,7 +140,9 @@ public class EmployeeServiceImplTest {
         employeeRepository.save(parentOfLeafEmployee);
 
         // call getReportingStructure and ensure that an error is thrown indicating the presence of a cycle in the tree
-        restTemplate.getForEntity(employeeIdReportingUrl, ReportingStructure.class, "16a596ae-edd3-4847-99fe-c4518e82c86f");
+        ResponseEntity<ReportingStructure> responseEntity = restTemplate.getForEntity(employeeIdReportingUrl,
+                ReportingStructure.class, "16a596ae-edd3-4847-99fe-c4518e82c86f" );
+        assertEquals(responseEntity.getStatusCodeValue(), 500);
     }
 
     private static void assertEmployeeEquivalence(Employee expected, Employee actual) {

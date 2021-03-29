@@ -71,6 +71,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             // It is assumed that each employee reports to exactly one supervisor; if any employee is encountered
             // twice in a Breadth First traversal, it indicates a cycle in the employee tree.
             if (visitedEmployees.contains(currentEmployee.getEmployeeId())){
+                LOG.error("Employee reporting structure contains a cycle");
                 throw new RuntimeException("Employee reporting structure contains a cycle");
             } else {
                 employeeCount++;
