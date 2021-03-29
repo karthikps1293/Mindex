@@ -1,8 +1,11 @@
 package com.mindex.challenge.data;
 
+import org.springframework.data.annotation.Id;
+
 import java.util.List;
 
 public class Employee {
+    @Id
     private String employeeId;
     private String firstName;
     private String lastName;
@@ -59,5 +62,16 @@ public class Employee {
 
     public void setDirectReports(List<Employee> directReports) {
         this.directReports = directReports;
+    }
+
+    /*
+    method to copy employee metadata (firstName, lastName etc.) from a complete Employee object into a partially
+    instantiated Employee object
+     */
+    public void copyEmployeeMetadata(Employee completeEmployee){
+        setFirstName(completeEmployee.getFirstName());
+        setLastName(completeEmployee.getLastName());
+        setDepartment(completeEmployee.getDepartment());
+        setPosition(completeEmployee.getPosition());
     }
 }
