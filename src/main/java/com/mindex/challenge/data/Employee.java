@@ -64,9 +64,10 @@ public class Employee {
         this.directReports = directReports;
     }
 
-    /*
-    method to copy employee metadata (firstName, lastName etc.) from a complete Employee object into a partially
-    instantiated Employee object
+    /**
+     * method to copy employee metadata (firstName, lastName etc.) from a complete Employee object into a partially
+     * instantiated Employee object
+     * @param completeEmployee : Employee object whose metadata is to be copied
      */
     public void copyEmployeeMetadata(Employee completeEmployee){
         setFirstName(completeEmployee.getFirstName());

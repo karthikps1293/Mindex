@@ -68,8 +68,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         while (! employeeQueue.isEmpty()) {
             Employee currentEmployee = employeeQueue.remove();
 
-            // It is assumed that each employee reports to exactly one supervisor; if any employee is encountered
-            // twice in a Breadth First traversal, it indicates a cycle in the employee tree.
+            /*
+             * It is assumed that each employee reports to exactly one supervisor; if any employee is encountered
+             * twice in a Breadth First traversal, it indicates a cycle in the employee tree.
+             */
             if (visitedEmployees.contains(currentEmployee.getEmployeeId())){
                 LOG.error("Employee reporting structure contains a cycle");
                 throw new RuntimeException("Employee reporting structure contains a cycle");
@@ -77,8 +79,10 @@ public class EmployeeServiceImpl implements EmployeeService {
                 employeeCount++;
                 visitedEmployees.add(currentEmployee.getEmployeeId());
 
-                // The currentEmployee object only contains the employee ID, hence retrieving the complete Employee
-                // object here
+                /*
+                 * The currentEmployee object only contains the employee ID, hence retrieving the complete Employee
+                 * object here
+                 */
                 Employee currentEmployeeComplete = read(currentEmployee.getEmployeeId());
                 currentEmployee.copyEmployeeMetadata(currentEmployeeComplete);
 

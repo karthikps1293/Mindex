@@ -5,7 +5,9 @@ import com.mindex.challenge.data.Employee;
 import com.mindex.challenge.data.ReportingStructure;
 import com.mindex.challenge.service.EmployeeService;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +18,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -123,25 +126,46 @@ public class EmployeeServiceImplTest {
     @Test
     public void testGetReportingStructureForCycleInEmployeeTree() {
 
-        // Add a new employee who reports to Paul McCartney, and has the root employee (John Lennon) as a direct report,
-        // then query reporting structure on the root employee
-        Employee leafEmployee = new Employee();
-        leafEmployee.setFirstName("David");
-        leafEmployee.setLastName("Beckham");
-        leafEmployee.setDepartment("Engineering");
-        leafEmployee.setPosition("Intern");
-        // make the root employee (John Lennon) a direct report of the leaf employee
-        leafEmployee.setDirectReports(new ArrayList<>(Collections.singletonList(employeeRepository.findByEmployeeId("16a596ae-edd3-4847-99fe-c4518e82c86f"))));
-        employeeRepository.save(leafEmployee);
+        String parentEmployeeId = UUID.randomUUID().toString();
+        String childEmployeeId = UUID.randomUUID().toString();
 
-        // Make the test employee a direct report of Paul McCartney
-        Employee parentOfLeafEmployee = employeeRepository.findByEmployeeId("b7839309-3348-463b-a7e3-5de1c168beb3");
-        parentOfLeafEmployee.setDirectReports(new ArrayList<>(Collections.singletonList(leafEmployee)));
-        employeeRepository.save(parentOfLeafEmployee);
+        Employee parentEmployee = new Employee();
+        parentEmployee.setEmployeeId(parentEmployeeId);
+        parentEmployee.setFirstName("John");
+        parentEmployee.setLastName("Doe");
+        parentEmployee.setDepartment("Engineering");
+        parentEmployee.setPosition("Manager");
+        employeeRepository.save(parentEmployee);
+
+        Employee childEmployee = new Employee();
+        childEmployee.setEmployeeId(childEmployeeId);
+        childEmployee.setFirstName("David");
+        childEmployee.setLastName("Beckham");
+        childEmployee.setDepartment("Engineering");
+        childEmployee.setPosition("Intern");
+        // make the parentEmployee a direct report of childEmployee
+        childEmployee.setDirectReports(new ArrayList<>(Collections.singletonList(employeeRepository.findByEmployeeId(parentEmployeeId))));
+        employeeRepository.save(childEmployee);
+
+        // make childEmployee a directReport of parentEmployee
+        parentEmployee = employeeRepository.findByEmployeeId(parentEmployeeId);
+        parentEmployee.setDirectReports(new ArrayList<>(Collections.singletonList(employeeRepository.findByEmployeeId(childEmployeeId))));
+        employeeRepository.save(parentEmployee);
 
         // call getReportingStructure and ensure that an error is thrown indicating the presence of a cycle in the tree
         ResponseEntity<ReportingStructure> responseEntity = restTemplate.getForEntity(employeeIdReportingUrl,
-                ReportingStructure.class, "16a596ae-edd3-4847-99fe-c4518e82c86f" );
+                ReportingStructure.class, parentEmployeeId );
+        assertEquals(responseEntity.getStatusCodeValue(), 500);
+    }
+
+    @Test
+    public void testReportingStructureForNonExistentEmployee(){
+
+        String invalidEmployeeId = UUID.randomUUID().toString();
+
+        // call getReportingStructure and ensure that an error is thrown (since the employee does not exist)
+        ResponseEntity<ReportingStructure> responseEntity = restTemplate.getForEntity(employeeIdReportingUrl,
+                ReportingStructure.class, invalidEmployeeId );
         assertEquals(responseEntity.getStatusCodeValue(), 500);
     }
 
