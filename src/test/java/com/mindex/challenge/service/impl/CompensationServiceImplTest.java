@@ -9,10 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -21,7 +19,6 @@ import static org.junit.Assert.assertNotNull;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CompensationServiceImplTest {
 
-    private String compensationUrl;
     private String compensationIdUrl;
 
     @Autowired
@@ -35,7 +32,6 @@ public class CompensationServiceImplTest {
 
     @Before
     public void setup() {
-        compensationUrl = "http://localhost:" + port + "/compensation";
         compensationIdUrl = "http://localhost:" + port + "/compensation/{id}";
     }
 
@@ -48,7 +44,16 @@ public class CompensationServiceImplTest {
         testCompensation.setEffectiveDate("08/25/2018");
 
         // Create checks
-        Compensation createdCompensation = restTemplate.postForEntity(compensationUrl, testCompensation, Compensation.class).getBody();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Compensation createdCompensation =
+                restTemplate.exchange(compensationIdUrl,
+                        HttpMethod.POST,
+                        new HttpEntity<Compensation>(testCompensation, headers),
+                        Compensation.class,
+                        testCompensation.getEmployeeId()).getBody();
+
         assertNotNull(createdCompensation);
         assertNotNull(createdCompensation.getEmployeeId());
         assertCompensationEquivalence(testCompensation, createdCompensation);
@@ -64,29 +69,39 @@ public class CompensationServiceImplTest {
     }
 
     @Test
-    public void testCreateInvalidEmployeeId(){
+    public void testCreateInvalidEmployeeId() {
         Compensation testCompensation = new Compensation();
         // create compensation using invalid employeeId
-        testCompensation.setEmployeeId(UUID.randomUUID().toString());
+        String invalidEmployeeId = "00000000-0000-0000-0000-000000000000";
+        testCompensation.setEmployeeId(invalidEmployeeId);
         testCompensation.setSalary(70000);
         testCompensation.setEffectiveDate("08/25/2018");
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        ResponseEntity<Compensation> responseEntity =
+                restTemplate.exchange(compensationIdUrl,
+                        HttpMethod.POST,
+                        new HttpEntity<Compensation>(testCompensation, headers),
+                        Compensation.class,
+                        testCompensation.getEmployeeId());
+
         // confirm that compensation creation fails as expected
-        ResponseEntity<Compensation> responseEntity = restTemplate.postForEntity(compensationUrl, testCompensation,
-                Compensation.class);
         assertEquals(responseEntity.getStatusCodeValue(), 500);
     }
 
     @Test
-    public void testCreateNullEmployeeId(){
-        Compensation testCompensation = new Compensation();
-        testCompensation.setSalary(70000);
-        testCompensation.setEffectiveDate("08/25/2018");
+    public void testReadInvalidEmployeeId() {
+
+        String invalidEmployeeId = "00000000-0000-0000-0000-000000000000";
+
+        ResponseEntity<Compensation> responseEntity = restTemplate.getForEntity(compensationIdUrl, Compensation.class,
+                invalidEmployeeId);
 
         // confirm that compensation creation fails as expected
-        ResponseEntity<Compensation> responseEntity = restTemplate.postForEntity(compensationUrl, testCompensation,
-                Compensation.class);
         assertEquals(responseEntity.getStatusCodeValue(), 500);
+
     }
 
     private static void assertCompensationEquivalence(Compensation expected, Compensation actual) {

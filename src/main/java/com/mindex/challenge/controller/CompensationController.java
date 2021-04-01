@@ -14,10 +14,12 @@ public class CompensationController {
     @Autowired
     private CompensationService compensationService;
 
-    @PostMapping("/compensation")
-    public Compensation create(@RequestBody Compensation compensation) {
-        LOG.debug("Received compensation create request for [{}]", compensation);
+    @PostMapping("/compensation/{id}")
+    public Compensation create(@PathVariable String id, @RequestBody Compensation compensation) {
+        LOG.debug("Received compensation create request for employee with id [{}] and compensation [{}]", id,
+                compensation);
 
+        compensation.setEmployeeId(id);
         return compensationService.create(compensation);
     }
 
