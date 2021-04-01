@@ -65,14 +65,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         Queue<Employee> employeeQueue = new LinkedList<>();
         employeeQueue.add(rootEmployee);
 
-        while (! employeeQueue.isEmpty()) {
+        while (!employeeQueue.isEmpty()) {
             Employee currentEmployee = employeeQueue.remove();
 
             /*
              * It is assumed that each employee reports to exactly one supervisor; if any employee is encountered
              * twice in a Breadth First traversal, it indicates a cycle in the employee tree.
              */
-            if (visitedEmployees.contains(currentEmployee.getEmployeeId())){
+            if (visitedEmployees.contains(currentEmployee.getEmployeeId())) {
                 LOG.error("Employee reporting structure contains a cycle");
                 throw new RuntimeException("Employee reporting structure contains a cycle");
             } else {
@@ -87,7 +87,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 currentEmployee.copyEmployeeMetadata(currentEmployeeComplete);
 
                 List<Employee> directReports = currentEmployeeComplete.getDirectReports();
-                if (directReports != null){
+                if (directReports != null) {
                     currentEmployee.setDirectReports(directReports);
                     employeeQueue.addAll(directReports);
                 }

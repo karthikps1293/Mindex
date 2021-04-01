@@ -154,18 +154,18 @@ public class EmployeeServiceImplTest {
 
         // call getReportingStructure and ensure that an error is thrown indicating the presence of a cycle in the tree
         ResponseEntity<ReportingStructure> responseEntity = restTemplate.getForEntity(employeeIdReportingUrl,
-                ReportingStructure.class, parentEmployeeId );
+                ReportingStructure.class, parentEmployeeId);
         assertEquals(responseEntity.getStatusCodeValue(), 500);
     }
 
     @Test
-    public void testReportingStructureForNonExistentEmployee(){
+    public void testReportingStructureForNonExistentEmployee() {
 
-        String invalidEmployeeId = UUID.randomUUID().toString();
+        String invalidEmployeeId = "00000000-0000-0000-0000-000000000000";
 
         // call getReportingStructure and ensure that an error is thrown (since the employee does not exist)
         ResponseEntity<ReportingStructure> responseEntity = restTemplate.getForEntity(employeeIdReportingUrl,
-                ReportingStructure.class, invalidEmployeeId );
+                ReportingStructure.class, invalidEmployeeId);
         assertEquals(responseEntity.getStatusCodeValue(), 500);
     }
 
